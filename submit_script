@@ -1,0 +1,18 @@
+#!/bin/bash
+#SBATCH --job-name=pdgemv
+#SBATCH --partition=medium
+#SBATCH --nodes=1
+#SBATCH --tasks-per-node=32
+#SBATCH --time=00:10:00
+#SBATCH --mem=64GB
+#SBATCH --account=classes
+#SBATCH --output=pdgemv-%j.out
+#SBATCH --error=pdgemv-%j.err
+
+# load openmpi module
+module load rhel7/openmpi/4.0.2-gcc-4.8
+
+# run code
+mpirun -n 1 ./pdgemv 4 4 1 1
+mpirun -n 2 ./pdgemv 4 4 2 1
+mpirun -n 4 ./pdgemv 4 4 2 2
