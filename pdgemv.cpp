@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
     int nProcs, rank;
     MPI_Comm_size(MPI_COMM_WORLD, &nProcs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    srand(rank*12345);
+    srand48(rank*12345);
 
     // Read dimensions and processor grid from command line arguments
     if(argc != 5) {
@@ -25,10 +25,10 @@ int main(int argc, char** argv) {
         return 1;
     }
     int m, n, pr, pc;
-    m  = atoi(argv[1]);
-    n  = atoi(argv[2]);
-    pr = atoi(argv[3]);
-    pc = atoi(argv[4]);
+    m  = atoi(argv[1]);     // number of rows of Matrix A
+    n  = atoi(argv[2]);     // number of columns of Matrix A
+    pr = atoi(argv[3]);     // number of rows of procs
+    pc = atoi(argv[4]);     // number of columns of procs
     if(pr*pc != nProcs) {
         cerr << "Processor grid doesn't match number of processors" << endl;
         return 1;
@@ -69,10 +69,18 @@ int main(int argc, char** argv) {
     // Communicate input vector entries
     double* xnow = new double[xdim];
 
-    MPI_ALLgather(&xlocal,1,MPI_DOUBLE,&xnow,MPI_DOUBLE);
-
+    // every thread has its corresponding parts of vector
+    MPI_Allgather(&xlocal, xdim, MPI_DOUBLE, &xnow, xdim, MPI_DOUBLE, row_comm);
+    // if (rank == 0){
+    //     cout << "values in xnow are: ";
+    //     for (int i = 0; i < xdim; i++){
+    //         cout << xnow[i] << " ";
+    //     }
+    //     cout << endl;
+    // }
     // Perform local matvec
-
+    local_gemv(Alocal, xlocal, ylocal, m, n);
+    
     // Communicate output vector entries
     
     // Stop timer
