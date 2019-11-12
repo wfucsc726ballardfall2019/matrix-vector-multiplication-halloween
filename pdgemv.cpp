@@ -67,6 +67,9 @@ int main(int argc, char** argv) {
     double time, start = MPI_Wtime();
 
     // Communicate input vector entries
+    double* xnow = new double[xdim];
+
+    MPI_ALLgather(&xlocal,1,MPI_DOUBLE,&xnow,MPI_DOUBLE);
 
     // Perform local matvec
 
