@@ -25,10 +25,10 @@ int main(int argc, char** argv) {
         return 1;
     }
     int m, n, pr, pc;
-    m  = atoi(argv[1]);
-    n  = atoi(argv[2]);
-    pr = atoi(argv[3]);
-    pc = atoi(argv[4]);
+    m  = atoi(argv[1]);     // number of rows of Matrix A
+    n  = atoi(argv[2]);     // number of columns of Matrix A
+    pr = atoi(argv[3]);     // number of rows of procs
+    pc = atoi(argv[4]);     // number of columns of procs
     if(pr*pc != nProcs) {
         cerr << "Processor grid doesn't match number of processors" << endl;
         return 1;
@@ -69,15 +69,21 @@ int main(int argc, char** argv) {
     // Communicate input vector entries
     double* xnow = new double[nloc];
 
-    MPI_ALLgather(xlocal,xdim,MPI_DOUBLE,xnow,MPI_DOUBLE,xdim,MPI_DOUBLE,col_comm);
-
-    // Perform local matvec
-    local_gemv(Alocal,xnow,ylocal,mloc,nloc);
-    // for(int i =0;i<mloc;i++){
-    //     for(int j = 0; j<nloc;j++){
-    //         cout<< "rank"<<rank<< "has results:"<<yloca
+    // every thread has its corresponding parts of vector
+    MPI_Allgather(xlocal, xdim, MPI_DOUBLE, xnow, xdim, MPI_DOUBLE, col_comm);
+    // if (rank == 0){
+    //     cout << "values in xnow are: ";
+    //     for (int i = 0; i < n; i++){
+    //         cout << xnow[i] << " ";
     //     }
+    //     cout << endl;
     // }
+    // Perform local matvec
+    local_gemv(Alocal, xnow, ylocal, mloc, nloc);
+    // for (int i = 0; i < m; i++){
+    //     cout << "rank " << rank << " has resutls: " << xnow[i] << " ";
+    // }
+    // cout << endl;
     // Communicate output vector entries
     
     // Stop timer
@@ -95,6 +101,13 @@ int main(int argc, char** argv) {
             cout << ylocal[i] << " ";
         }
         cout << endl; // flush now
+        for(int i = 0; i < nloc; i++){
+            for (int j = 0; j < mloc; j++){
+                cout << "rank " << rank << " has Alocal: "<< Alocal[i+j*mloc] << " ";
+            }
+            cout << endl;
+        }
+        cout << endl;
     }
 
     // Print time
