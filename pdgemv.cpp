@@ -67,17 +67,17 @@ int main(int argc, char** argv) {
     double time, start = MPI_Wtime();
 
     // Communicate input vector entries
-    double* xnow = new double[xdim];
+    double* xnow = new double[nloc];
 
     // every thread has its corresponding parts of vector
-    MPI_Allgather(&xlocal, xdim, MPI_DOUBLE, &xnow, xdim, MPI_DOUBLE, row_comm);
-    // if (rank == 0){
-    //     cout << "values in xnow are: ";
-    //     for (int i = 0; i < xdim; i++){
-    //         cout << xnow[i] << " ";
-    //     }
-    //     cout << endl;
-    // }
+    MPI_Allgather(xlocal, xdim, MPI_DOUBLE, xnow, xdim, MPI_DOUBLE, col_comm);
+    if (rank == 0){
+        cout << "values in xnow are: ";
+        for (int i = 0; i < n; i++){
+            cout << xnow[i] << " ";
+        }
+        cout << endl;
+    }
     // Perform local matvec
     local_gemv(Alocal, xlocal, ylocal, m, n);
     
